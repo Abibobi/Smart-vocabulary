@@ -51,3 +51,16 @@ class Token(BaseModel):
 # This defines the data we'll extract from the JWT payload.
 class TokenData(BaseModel):
     username: str | None = None
+
+# --- Token Schemas ---
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+
+# --- Review Schemas ---
+class ReviewResult(BaseModel):
+    was_correct: bool

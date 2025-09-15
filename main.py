@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import JWTError
 
-import models, schemas, crud, security
+import models, schemas, crud, security, session_manager
 from database import engine, SessionLocal
 
 models.Base.metadata.create_all(bind=engine)
@@ -114,3 +114,53 @@ def read_user_words(
     """
     words = crud.get_user_words(db, user_id=current_user.id, skip=skip, limit=limit)
     return words
+
+@app.get("/review/next/", response_model=schemas.Word)
+def get_next_review_word(
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    user_id = current_user.id
+    
+    if user_id not in session_manager.active_sessions:
+        user_words = crud.get_user_words(db, user_id=user_id, limit=1000)
+        session_manager.active_sessions[user_id] = session_manager.UserSession(words=user_words)
+
+    session = session_manager.active_sessions[user_id]
+    next_word = session.get_next_word()
+
+    if next_word is None:
+        # Clear the session when there are no more words for today
+        del session_manager.active_sessions[user_id]
+        raise HTTPException(status_code=404, detail="No more words due for review today.")
+    
+    return next_word
+
+@app.post("/review/{word_id}", response_model=schemas.Word)
+def submit_review_for_word(
+    word_id: int,
+    result: schemas.ReviewResult,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    user_id = current_user.id
+    if user_id not in session_manager.active_sessions:
+        raise HTTPException(status_code=400, detail="No active review session. Please get the next word first.")
+        
+    session = session_manager.active_sessions[user_id]
+    word_to_update = session.word_db.get(word_id)
+
+    if not word_to_update:
+        raise HTTPException(status_code=404, detail="Word not found in current review session.")
+
+    session.update_word_review(word_to_update, result.was_correct)
+    
+    updated_word_db = crud.update_word_review_status(
+        db,
+        word_id=word_id,
+        user_id=user_id,
+        new_date=word_to_update.next_review_due,
+        new_difficulty=word_to_update.difficulty
+    )
+    
+    return updated_word_db
