@@ -33,15 +33,16 @@ def get_user_words(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     """
     return db.query(models.Word).filter(models.Word.owner_id == user_id).offset(skip).limit(limit).all()
 
-def create_user_word(db: Session, word: schemas.WordCreate, user_id: int):
+def create_user_word(db: Session, word: schemas.WordBase, user_id: int):
     """
     Creates a new word in the database and links it to a user.
+    Expects a WordBase object that includes the AI-generated definition.
     """
-    # Set the first review for one day from now
-    next_review = datetime.date.today() + datetime.timedelta(days=1)
+    next_review = datetime.date.today()
     
     db_word = models.Word(
-        **word.dict(), 
+        text=word.text,
+        definition=word.definition,
         owner_id=user_id,
         next_review_due=next_review
     )

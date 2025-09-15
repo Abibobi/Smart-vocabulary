@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import JWTError
 
-import models, schemas, crud, security, session_manager
+import models, schemas, crud, security, session_manager, ai_service
 from database import engine, SessionLocal
 
 models.Base.metadata.create_all(bind=engine)
@@ -92,15 +92,28 @@ async def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
 
 @app.post("/words/", response_model=schemas.Word, status_code=status.HTTP_201_CREATED)
-def create_word_for_user(
-    word: schemas.WordCreate, 
+def create_word_for_user_with_ai(
+    word_request: schemas.WordCreate, 
     db: Session = Depends(get_db), 
     current_user: schemas.User = Depends(get_current_user)
 ):
     """
-    Adds a new word to the vocabulary list of the currently logged-in user.
+    Creates a new word for the user.
+    The user only provides the word text, and this endpoint fetches the
+    definition from the AI service before saving.
     """
-    return crud.create_user_word(db=db, word=word, user_id=current_user.id)
+    # 1. Call the AI service to get details
+    ai_details = ai_service.get_ai_word_details(word_request.text)
+
+    # 2. Prepare the full word object for the database
+    word_to_create = schemas.WordBase(
+        text=word_request.text,
+        definition=ai_details.get("definition", "N/A") # Use .get for safety
+    )
+    
+    # 3. Pass the complete object to the CRUD function
+    return crud.create_user_word(db=db, word=word_to_create, user_id=current_user.id)
+
 
 @app.get("/words/", response_model=list[schemas.Word])
 def read_user_words(
@@ -164,3 +177,15 @@ def submit_review_for_word(
     )
     
     return updated_word_db
+
+# --- AI Endpoints ---
+@app.post("/ai/generate-details/", response_model=schemas.AIWordDetailResponse)
+def generate_ai_details(
+    request: schemas.AIWordDetailRequest,
+    current_user: schemas.User = Depends(get_current_user)
+):
+    """
+    Takes a word and returns an AI-generated definition and example sentence.
+    """
+    details = ai_service.get_ai_word_details(request.word_text)
+    return details
