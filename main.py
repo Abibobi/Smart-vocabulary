@@ -5,10 +5,20 @@ from jose import JWTError
 
 import models, schemas, crud, security, session_manager, ai_service
 from database import engine, SessionLocal
+from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# --- CORS Middleware ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"], # The origin of your React app
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # This tells FastAPI which URL will be used to get the token.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
