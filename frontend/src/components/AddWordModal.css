@@ -1,0 +1,109 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  animation: slide-down 0.3s ease-out;
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.modal-content p {
+  margin-bottom: 1.5rem;
+  color: #555;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  background-color: #007bff;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.explanation-view h2 {
+  text-transform: capitalize;
+  color: #0056b3;
+}
+
+.explanation-item {
+  margin-bottom: 1rem;
+  text-align: left;
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border-radius: 5px;
+}
+.explanation-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #333;
+}
+.explanation-item p {
+  margin: 0;
+}
+
+.confirm-btn {
+  background-color: #28a745 !important; /* Important to override general button styles */
+  margin-top: 1rem;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-top: 1rem;
+}
+

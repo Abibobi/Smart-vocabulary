@@ -102,27 +102,17 @@ async def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
 
 @app.post("/words/", response_model=schemas.Word, status_code=status.HTTP_201_CREATED)
-def create_word_for_user_with_ai(
+def create_word_for_user(
     word_request: schemas.WordCreate, 
     db: Session = Depends(get_db), 
     current_user: schemas.User = Depends(get_current_user)
 ):
     """
-    Creates a new word for the user.
-    The user only provides the word text, and this endpoint fetches the
-    definition from the AI service before saving.
+    Saves a new word to the user's vocabulary list after the user has 
+    confirmed the definition on the frontend.
     """
-    # 1. Call the AI service to get details
-    ai_details = ai_service.get_ai_word_details(word_request.text)
-
-    # 2. Prepare the full word object for the database
-    word_to_create = schemas.WordBase(
-        text=word_request.text,
-        definition=ai_details.get("definition", "N/A") # Use .get for safety
-    )
-    
-    # 3. Pass the complete object to the CRUD function
-    return crud.create_user_word(db=db, word=word_to_create, user_id=current_user.id)
+    # The AI call is no longer here. We just save the confirmed data.
+    return crud.create_user_word(db=db, word=word_request, user_id=current_user.id)
 
 
 @app.get("/words/", response_model=list[schemas.Word])
@@ -199,3 +189,32 @@ def generate_ai_details(
     """
     details = ai_service.get_ai_word_details(request.word_text)
     return details
+
+@app.post("/ai/explain-word/", response_model=schemas.AIWordExplanation)
+def explain_word_with_ai(
+    request: schemas.AIWordDetailRequest,
+    current_user: schemas.User = Depends(get_current_user)
+):
+    """
+    Takes a word and returns a comprehensive AI-generated explanation
+    including a definition, example, and mnemonic. Does NOT save the word.
+    """
+    explanation = ai_service.get_ai_word_explanation(request.word_text)
+    return explanation
+
+# NEW ENDPOINT for regenerating explanations
+@app.post("/ai/regenerate-explanation/", response_model=schemas.AIRegenerateResponse)
+def regenerate_ai_explanation(request: schemas.AIRegenerateRequest, current_user: schemas.User = Depends(get_current_user)):
+    alt_details = ai_service.get_alternative_explanation(
+        word=request.word_text,
+        previous_example=request.previous_example,
+        previous_mnemonic=request.previous_mnemonic
+    )
+    return alt_details
+
+@app.get("/ai/suggest-words/", response_model=schemas.AISuggestionResponse)
+def suggest_words_with_ai(db: Session = Depends(get_db), current_user: schemas.User = Depends(get_current_user)):
+    user_words = crud.get_user_words(db, user_id=current_user.id, limit=10)
+    existing_word_texts = [word.text for word in user_words]
+    suggestions = ai_service.get_ai_word_suggestions(existing_words=existing_word_texts)
+    return suggestions

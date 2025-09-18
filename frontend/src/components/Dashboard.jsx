@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../api';
 import ReviewSession from './ReviewSession';
+import AddWordModal from './AddWordModal';
+import WordSuggestions from './WordSuggestions';
 import './Dashboard.css';
 
 function Dashboard({ setToken }) {
   const [words, setWords] = useState([]);
-  const [newWord, setNewWord] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   
-  // State to control which view is active
   const [isReviewing, setIsReviewing] = useState(false);
+  const [isAddingWord, setIsAddingWord] = useState(false);
+  // This state will hold a word clicked from the suggestions
+  const [wordToExplain, setWordToExplain] = useState('');
+
+  const [suggestions, setSuggestions] = useState([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const fetchWords = async () => {
     try {
@@ -22,74 +27,66 @@ function Dashboard({ setToken }) {
   };
 
   useEffect(() => {
-    // Only fetch words when not in a review session
     if (!isReviewing) {
       fetchWords();
     }
   }, [isReviewing]);
 
-  const handleAddWord = async (e) => {
-    e.preventDefault();
-    if (!newWord.trim()) return;
-
-    setIsLoading(true);
-    setError('');
-    try {
-      await apiClient.post('/words/', { text: newWord });
-      setNewWord('');
-      await fetchWords();
-    } catch (err) { // <<< THIS BLOCK IS NOW FIXED
-      setError(err.response?.data?.detail || 'Failed to add word.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleLogout = () => {
     setToken(null);
   };
+
+  const handleGetSuggestions = async () => {
+    setIsLoadingSuggestions(true);
+    setError('');
+    try {
+      const response = await apiClient.get('/ai/suggest-words/');
+      setSuggestions(response.data.suggestions);
+    } catch (err) {
+      setError("Could not fetch suggestions.");
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  // When a suggested word is clicked, set it in state and open the modal
+  const handleSuggestionClick = (word) => {
+    setWordToExplain(word);
+    setIsAddingWord(true);
+  };
   
-  // If user is in a review session, show the ReviewSession component
+  const handleAddNewWordClick = () => {
+    setWordToExplain(''); // Ensure no initial word is passed
+    setIsAddingWord(true);
+  };
+
   if (isReviewing) {
     return <ReviewSession onFinishSession={() => setIsReviewing(false)} />;
   }
 
-  // Otherwise, show the main dashboard
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>My Vocabulary</h1>
-        <button onClick={handleLogout} className="logout-btn">Logout</button>
-      </header>
-
-      <div className="review-prompt">
-        <h2>Ready to learn?</h2>
-        <p>Start a session to continue learning and master your vocabulary.</p>
-        <button onClick={() => setIsReviewing(true)} className="start-review-btn">
-          Start Review Session
-        </button>
-      </div>
-
-      <div className="dashboard-content">
-        <div className="add-word-section">
-          <h2>Add a New Word</h2>
-          <form onSubmit={handleAddWord}>
-            <input
-              type="text"
-              value={newWord}
-              onChange={(e) => setNewWord(e.target.value)}
-              placeholder="e.g., serendipity"
-              disabled={isLoading}
-            />
-            <button type="submit" disabled={isLoading}>
-              {isLoading ? 'Adding...' : 'Add Word'}
+    <>
+      <div className="dashboard-container">
+        <header className="dashboard-header">
+          <h1>My Vocabulary</h1>
+          <div className="header-buttons">
+            <button onClick={handleAddNewWordClick} className="add-word-btn">
+              + Add New Word
             </button>
-          </form>
-          {error && <p className="error-message">{error}</p>}
+            <button onClick={handleLogout} className="logout-btn">Logout</button>
+          </div>
+        </header>
+
+        <div className="review-prompt">
+          <h2>Ready to learn?</h2>
+          <p>You have words due for review. Start a session to continue learning.</p>
+          <button onClick={() => setIsReviewing(true)} className="start-review-btn">
+            Start Review Session
+          </button>
         </div>
 
         <div className="word-list-section">
-          <h2>Word List</h2>
+          <h2>My Word List</h2>
           {words.length > 0 ? (
             <ul className="word-list">
               {words.map((word) => (
@@ -100,11 +97,35 @@ function Dashboard({ setToken }) {
               ))}
             </ul>
           ) : (
-            <p>Your vocabulary list is empty. Add a new word to get started!</p>
+            <p>Your vocabulary list is empty. Add a new word or get some suggestions below!</p>
           )}
         </div>
+        
+        <div className="suggestions-section">
+          <h2>Need Inspiration?</h2>
+          <p>Let our AI suggest some new words for you to learn.</p>
+          <button onClick={handleGetSuggestions} disabled={isLoadingSuggestions} className="suggest-btn">
+            {isLoadingSuggestions ? 'Thinking...' : 'Suggest Words for Me'}
+          </button>
+          <WordSuggestions 
+            suggestions={suggestions} 
+            onSelectWord={handleSuggestionClick} 
+            isLoading={isLoadingSuggestions}
+          />
+        </div>
+        {error && <p className="error-message">{error}</p>}
       </div>
-    </div>
+      
+      {isAddingWord && (
+        <AddWordModal 
+          // Pass the selected word (or an empty string) to the modal
+          initialWord={wordToExplain}
+          onClose={() => setIsAddingWord(false)} 
+          // After adding a word, refresh the list and clear suggestions
+          onWordAdded={() => { fetchWords(); setSuggestions([]); }}
+        />
+      )}
+    </>
   );
 }
 

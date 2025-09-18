@@ -1,0 +1,46 @@
+.suggestions-container {
+  background-color: #e9f5ff;
+  border: 1px solid #bde0ff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.suggestions-container h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #0056b3;
+}
+
+.loading-suggestions {
+  text-align: center;
+  padding: 1rem;
+  color: #555;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.suggestion-item {
+  background-color: #ffffff;
+  border: 1px solid #007bff;
+  color: #007bff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.95rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.suggestion-item:hover {
+  background-color: #007bff;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
