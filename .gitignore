@@ -1,8 +1,8 @@
 # ----------------------------
-# Python / FastAPI
+# Python / FastAPI backend
 # ----------------------------
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 *.db
@@ -14,20 +14,15 @@ venv/
 env/
 *.log
 *.pot
-*.pyc
 *.mypy_cache/
 .pytest_cache/
 .coverage
 htmlcov/
 dist/
-
-# VSCode / IDE
-.vscode/
-.idea/
-*.swp
+build/
 
 # ----------------------------
-# Node / React (Vite)
+# Node / React (Vite frontend)
 # ----------------------------
 node_modules/
 dist/
@@ -37,10 +32,12 @@ build/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+pnpm-debug.log*
+
+# Optional lockfiles (keep if you want reproducible installs)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
 # Environment files
 .env.local
@@ -48,5 +45,11 @@ pnpm-lock.yaml
 .env.test.local
 .env.production.local
 
-# Misc
+# ----------------------------
+# IDE / OS junk
+# ----------------------------
+.vscode/
+.idea/
+*.swp
 .DS_Store
+Thumbs.db
