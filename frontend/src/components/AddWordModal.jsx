@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, BookOpen, Sparkles, RefreshCw, Plus, Lightbulb, FileText, Quote } from 'lucide-react';
 import apiClient from '../api';
+import PronunciationPractice from './PronunciationPractice'; // Import the component
 
 function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
   // Your original working state management
@@ -11,7 +12,7 @@ function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState('');
 
-  // Your original working handleExplainWord function
+  // All your original functions (handleExplainWord, useEffect, etc.) remain unchanged
   const handleExplainWord = async (wordToExplain) => {
     if (!wordToExplain.trim()) return;
     
@@ -28,20 +29,17 @@ function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
     }
   };
 
-  // Your original useEffect
   useEffect(() => {
     if (initialWord) {
       handleExplainWord(initialWord);
     }
   }, [initialWord]);
 
-  // Your original form submit handler
   const handleFormSubmit = (e) => {
     e.preventDefault();
     handleExplainWord(wordText);
   };
   
-  // Your original regenerate handler
   const handleRegenerate = async () => {
     setIsRegenerating(true);
     setError('');
@@ -51,7 +49,6 @@ function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
         previous_example: explanation.example,
         previous_mnemonic: explanation.mnemonic
       });
-      // Update the explanation with the new details, keeping the original definition
       setExplanation(prev => ({ ...prev, ...response.data }));
     } catch (err) {
       setError('Could not get a new example.');
@@ -60,7 +57,6 @@ function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
     }
   };
 
-  // Your original add word handler
   const handleAddWord = async () => {
     setIsLoading(true);
     setError('');
@@ -120,6 +116,7 @@ function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
           {/* Content */}
           <div className="p-6">
             {step === 1 && (
+              // ... Your step 1 JSX is perfect, no changes needed ...
               <div className="space-y-6">
                 <div className="text-center">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
@@ -211,6 +208,10 @@ function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
                     <p className="text-gray-700 leading-relaxed">{explanation.mnemonic}</p>
                   </div>
                 </div>
+                
+                {/* --- INTEGRATION POINT --- */}
+                {/* The PronunciationPractice component is added here */}
+                <PronunciationPractice word={wordText} />
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -263,3 +264,4 @@ function AddWordModal({ onClose, onWordAdded, initialWord = '' }) {
 }
 
 export default AddWordModal;
+

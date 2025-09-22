@@ -3,3 +3,4 @@ sqlalchemy
 python-jose[cryptography]
 passlib[bcrypt]
 google-generativeai
+google-cloud-speech
