@@ -4,8 +4,8 @@ A full-stack, AI-powered web application designed to make vocabulary learning mo
 
 ### Live Demo 🚀
 
-* **Frontend (Vercel):** `https://[YOUR_VERCEL_PROJECT_NAME].vercel.app/`
-* **Backend API (Render):** `https://[YOUR_RENDER_PROJECT_NAME].onrender.com/docs`
+* **Frontend (Vercel):** `https://smart-vocab-api.onrender.com`
+* **Backend API (Render):** `https://smart-vocabulary.vercel.app/`
 
 ---
 
