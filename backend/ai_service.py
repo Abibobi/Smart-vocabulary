@@ -4,7 +4,7 @@ import json
 
 # Configure the Gemini API client
 genai.configure(api_key=settings.google_api_key)
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+model = genai.GenerativeModel('gemini-flash-latest')
 
 def get_ai_word_details(word: str) -> dict:
     """
